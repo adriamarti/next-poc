@@ -2,12 +2,6 @@ import { sanity } from '@/lib/sanity';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 
-interface PageProps {
-  params: {
-    slug: string;
-  };
-}
-
 type Block = {
   _type: string;
   children?: Array<{
@@ -32,14 +26,20 @@ export async function generateStaticParams() {
   return posts.map((post: SanityPost) => ({ slug: post.slug.current }));
 }
 
-export default async function PostPage({ params }: PageProps) {
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
   const post: Post = await sanity.fetch(
     `*[_type == "post" && slug.current == $slug][0]{
       title,
       mainImage { asset -> { url } },
       body
     }`,
-    { slug: params.slug }
+    { slug }
   );
 
   if (!post) return notFound();
@@ -54,14 +54,18 @@ export default async function PostPage({ params }: PageProps) {
           alt={post.title}
           width={500}
           height={192}
-          className='w-full h-48 object-cover'
+          className='w-full h-64 object-cover rounded-xl mb-6'
         />
       )}
 
       <article className='prose prose-lg max-w-none'>
         {post.body?.map((block, i) =>
           block._type === 'block' ? (
-            <p key={i}>{block.children?.map((child) => child.text).join('')}</p>
+            <p key={i}>
+              {block.children
+                ?.map((child: { text: string }) => child.text)
+                .join('')}
+            </p>
           ) : null
         )}
       </article>
