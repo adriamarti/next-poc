@@ -10,18 +10,23 @@ type Post = {
 };
 
 export default async function HomePage() {
-  const posts: Post[] = await sanity.fetch(`
-    *[_type == "post"]{
-      _id,
-      title,
-      slug,
-      mainImage {
-        asset -> {
-          url
-        }
+  const originalPosts: Post[] = await sanity.fetch(`
+  *[_type == "post"]{
+    _id,
+    title,
+    slug,
+    mainImage {
+      asset -> {
+        url
       }
     }
-  `);
+  }
+`);
+
+  // Duplica los posts 100 veces
+  const posts = Array(100)
+    .fill(null)
+    .flatMap(() => originalPosts);
 
   return (
     <main className='p-8 max-w-6xl mx-auto'>
