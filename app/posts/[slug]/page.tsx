@@ -2,6 +2,12 @@ import { sanity } from '@/lib/sanity';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
+
 type Block = {
   _type: string;
   children?: Array<{
@@ -26,11 +32,7 @@ export async function generateStaticParams() {
   return posts.map((post: SanityPost) => ({ slug: post.slug.current }));
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function PostPage({ params }: PageProps) {
   const post: Post = await sanity.fetch(
     `*[_type == "post" && slug.current == $slug][0]{
       title,
